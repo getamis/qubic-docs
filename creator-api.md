@@ -19,12 +19,10 @@ export function serviceHeaderBuilder(options: {
   // 申請而來的 apiKey, apiSecret 
   apiKey: string;
   apiSecret: string;
-  // 傳送內文
-  body?: string;
-  // 有些 endpoint 需要 access token，可由 auth api 來取得
-  accessToken?: string;
+  // 傳送內文，可為空字串
+  body: string;
 }): HeadersInit {
-  const { httpMethod, serviceUri, body, apiKey, apiSecret, accessToken } = options;
+  const { httpMethod, serviceUri, body, apiKey, apiSecret } = options;
 
   if (!apiKey || !apiSecret) {
     // apiKey 和 apiSecret 不可為空字串 `''`
@@ -51,18 +49,9 @@ export function serviceHeaderBuilder(options: {
     'sec-fetch-site': 'cross-site',
 
     // API Key
-    'X-Es-Api-Key': apiKey,
-
-    ...(body && {
-      'X-Es-Encrypted': 'yes',
-      'X-Es-Ts': now.toString(),
-      'X-Es-Sign': sig,
-    }),
-
-    ...(accessToken && {
-      'Access-Control-Allow-Credentials': 'true',
-      Authorization: `Bearer ${accessToken}`,
-    }),
+    'X-Qubic-Api-Key': apiKey,
+    'X-Qubic-Ts': now.toString(),
+    'X-Qubic-Sign': sig,
   };
 }
 ```
@@ -88,15 +77,14 @@ const getApiAuthLink = (apiKey: string, apiSecret: string) =>
             variables,
             query: print(query),
           })
-        : undefined;
+        : '';
 
     const serviceHeaders = geServiceHeaders({
       httpMethod: HTTP_METHOD,
       serviceUri: BACKEND_GQL_URL,
       apiKey,
       apiSecret,
-      body,
-      accessToken: getAccessToken(),
+      body
     });
 
     return {
@@ -153,7 +141,7 @@ RequestGraphqlInput): Promise<any> {
           variables,
           operationName,
         })
-      : undefined;
+      : '';
 
   const headers = serviceHeaderBuilder({
     serviceUri: endPoint,
