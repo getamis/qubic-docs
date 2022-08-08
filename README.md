@@ -21,8 +21,7 @@ Qubic Creator 以及 Qubic Pass 的 Admin API 是 server side 使用的 API，�
 
 ### Generate API Headers <a id="headers" />
 
-在使用之前，必須先申請取得 apiKey 和 apiSecret，
-並在發送 request 在 headers 放入必要欄位
+在使用之前，必須先申請取得 API key 和 secret，使用指定方法簽名後，放入 request 的 headers 中。
 
 ```ts
 import HmacSHA256 from 'crypto-js/hmac-sha256';
