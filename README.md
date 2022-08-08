@@ -27,35 +27,15 @@ Qubic Creator 以及 Qubic Pass 的 Admin API 是 server side 使用的 API，�
 import HmacSHA256 from 'crypto-js/hmac-sha256';
 import Base64 from 'crypto-js/enc-base64';
 
-export function serviceHeaderBuilder(options: {
-  // GET, POST
-  httpMethod: string;
-  // endpoint 的完整 url
-  serviceUri: string;
-  // 申請而來的 apiKey, apiSecret 
-  apiKey: string;
-  apiSecret: string;
-  // 傳送內文，可為空字串
-  body: string;
-}): HeadersInit {
-  const { httpMethod, serviceUri, body, apiKey, apiSecret } = options;
+export function serviceHeaderBuilder(options) {
+  const { url, apiKey, apiSecret, body = '' } = options;
 
   if (!apiKey || !apiSecret) {
-    // apiKey 和 apiSecret 不可為空字串 `''`
     throw Error('apiKey and apiSecret should have value')
   }
 
-  // 取得當前用戶時間
   const now = Date.now();
-
-  // serviceUri ex: https://admin.qubic.market/market/services/graphql-public
-  const urlObj = new URL(serviceUri);
-  // `/market/services/graphql-public`
-  const requestURI = `${urlObj.pathname}${urlObj.search}`;
-
-  // 產生訊息
-  const msg = `${now}${httpMethod}${requestURI}${body}`;
-  // 用 apiSecret 對訊息簽名，並轉成 base64
+  const msg = `${now}POST${url}${body}`;
   const sig = HmacSHA256(msg, apiSecret).toString(Base64);
 
   return {
@@ -63,7 +43,6 @@ export function serviceHeaderBuilder(options: {
     'sec-fetch-dest': 'empty',
     'sec-fetch-mode': 'cors',
     'sec-fetch-site': 'cross-site',
-    
     // API Key
     'X-Qubic-Api-Key': apiKey,
     'X-Qubic-Ts': now.toString(),
@@ -87,7 +66,7 @@ https://graphql.org/graphql-js/graphql-clients/
 https://www.apollographql.com/docs/react/api/link/introduction/
 
 ```ts
-const getApiAuthLink = (apiKey: string, apiSecret: string) =>
+const getApiAuthLink = (apiKey, apiSecret) =>
   setContext(async (request, previousContext) => {
     const { operationName, variables, query } = request;
     const { headers = {} } = previousContext;
@@ -102,8 +81,7 @@ const getApiAuthLink = (apiKey: string, apiSecret: string) =>
         : '';
 
     const serviceHeaders = geServiceHeaders({
-      httpMethod: 'POST',
-      serviceUri: GRAPHQL_URL,
+      url: GRAPHQL_URL,
       apiKey,
       apiSecret,
       body,
@@ -124,9 +102,9 @@ const getApiAuthLink = (apiKey: string, apiSecret: string) =>
 https://github.com/prisma-labs/graphql-request
 
 ```ts
-import request, { RequestDocument } from 'graphql-request';
+import request from 'graphql-request';
 
-function resolveRequestDocument(document: RequestDocument): { query: string; operationName?: string } {
+function resolveRequestDocument(document) {
   if (typeof document === 'string') {
     let operationName;
 
@@ -140,7 +118,6 @@ function resolveRequestDocument(document: RequestDocument): { query: string; ope
   }
 
   const operationName = extractOperationName(document);
-
   return { query: print(document), operationName };
 }
 
@@ -151,8 +128,7 @@ export function requestGraphql({
   apiSecret,
   creatorUrl,
   isPublic = false,
-}: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-RequestGraphqlInput): Promise<any> {
+}) {
   const { operationName, query: graphQLQuery } = resolveRequestDocument(graphQLQuery);
   const body =
     operationName && query
@@ -164,8 +140,7 @@ RequestGraphqlInput): Promise<any> {
       : '';
 
   const headers = serviceHeaderBuilder({
-    httpMethod: 'POST',
-    serviceUri: GRAPHQL_URL,
+    url: GRAPHQL_URL,
     apiKey,
     apiSecret,
     body,
