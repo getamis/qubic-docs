@@ -25,4 +25,4 @@ Keep the signature and verify it on the server side to determine that the reques
 https://pass.qubic.app/verify?{query}
 ```
 
-Verify NFT token ownership by opening an auth window that allows users to connect wallet, including Qubic, Metamask or Wallet Connect.](https://pass.qubic.app/admin/graphql/playg)round
+Verify NFT token ownership by opening an auth window that allows users to connect wallet, including Qubic, Metamask or Wallet Connect.
