@@ -29,6 +29,8 @@ import HmacSHA256 from 'crypto-js/hmac-sha256';
 import Base64 from 'crypto-js/enc-base64';
 
 export function serviceHeaderBuilder(options: {
+  // GET, POST
+  httpMethod: string;
   // endpoint 的完整 url
   serviceUri: string;
   // 申請而來的 apiKey, apiSecret 
@@ -37,7 +39,7 @@ export function serviceHeaderBuilder(options: {
   // 傳送內文，可為空字串
   body: string;
 }): HeadersInit {
-  const { serviceUri, body, apiKey, apiSecret } = options;
+  const { httpMethod, serviceUri, body, apiKey, apiSecret } = options;
 
   if (!apiKey || !apiSecret) {
     // apiKey 和 apiSecret 不可為空字串 `''`
@@ -53,7 +55,7 @@ export function serviceHeaderBuilder(options: {
   const requestURI = `${urlObj.pathname}${urlObj.search}`;
 
   // 產生訊息
-  const msg = `${now}POST${requestURI}${body}`;
+  const msg = `${now}${httpMethod}${requestURI}${body}`;
   // 用 apiSecret 對訊息簽名，並轉成 base64
   const sig = HmacSHA256(msg, apiSecret).toString(Base64);
 
@@ -74,7 +76,11 @@ export function serviceHeaderBuilder(options: {
 
 ### GraphQL Example
 
-以下是兩種常用的 GraphQL 客戶端，以及使用範例
+GraphQL 可以直接使用簡單的 fetch 來獲得資料，以下是 GraphQL 基金會提供的 API 查詢方式。
+
+https://graphql.org/graphql-js/graphql-clients/
+
+另外以下是兩種常用的 GraphQL 客戶端，以及使用範例。
 
 
 #### Apollo Link
@@ -97,11 +103,11 @@ const getApiAuthLink = (apiKey: string, apiSecret: string) =>
         : '';
 
     const serviceHeaders = geServiceHeaders({
-      httpMethod: HTTP_METHOD,
-      serviceUri: BACKEND_GQL_URL,
+      httpMethod: 'POST',
+      serviceUri: GRAPHQL_URL,
       apiKey,
       apiSecret,
-      body
+      body,
     });
 
     return {
@@ -131,7 +137,6 @@ function resolveRequestDocument(document: RequestDocument): { query: string; ope
     } catch (err) {
       // Failed parsing the document, the operationName will be undefined
     }
-
     return { query: document, operationName };
   }
 
@@ -149,8 +154,6 @@ export function requestGraphql({
   isPublic = false,
 }: // eslint-disable-next-line @typescript-eslint/no-explicit-any
 RequestGraphqlInput): Promise<any> {
-  const endPoint = `${creatorUrl}/services/graphql-${isPublic ? 'public' : 'acc'}`;
-
   const { operationName, query: graphQLQuery } = resolveRequestDocument(graphQLQuery);
   const body =
     operationName && query
@@ -162,15 +165,15 @@ RequestGraphqlInput): Promise<any> {
       : '';
 
   const headers = serviceHeaderBuilder({
-    serviceUri: endPoint,
     httpMethod: 'POST',
+    serviceUri: GRAPHQL_URL,
     apiKey,
     apiSecret,
     body,
   });
 
   return request({
-    url: endPoint,
+    url: GRAPHQL_URL,
     document: query,
     variables,
     requestHeaders: headers,
