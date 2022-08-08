@@ -1,5 +1,6 @@
 # Qubic Developer Documents
 
+
 ## APIs
 
 * **Qubic Creator**
@@ -8,7 +9,15 @@
   * [Admin API (GraphQL)](./pass/README.md#qubic-pass-admin-api)
   * [Client-side API (REST)](./pass/README.md#qubic-pass-client-api)
 
+
 ## Usages
+
+Qubic Pass Client-side API 無需權限，只需透過按鈕或 Javascript 程式碼打開彈出視窗，讓使用者連結錢包。
+
+Qubic Creator 以及 Qubic Pass 的 Admin API 是 server side 使用的 API，需要透過 API key 與 secret 獲取存取 API 的權限。
+
+請參考下方文件了解如何產生 headers 以及使用範例。
+
 
 ### Generate API Headers <a id="headers" />
 
@@ -62,9 +71,11 @@ export function serviceHeaderBuilder(options: {
 }
 ```
 
+
 ### GraphQL Example
 
 以下是兩種常用的 GraphQL 客戶端，以及使用範例
+
 
 #### Apollo Link
 
@@ -101,6 +112,7 @@ const getApiAuthLink = (apiKey: string, apiSecret: string) =>
     };
   });
 ```
+
 
 #### GraphQL Request
 
