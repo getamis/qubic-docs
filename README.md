@@ -42,6 +42,8 @@ export function createHeader(options) {
   const sig = HmacSHA256(msg, apiSecret).toString(Base64);
 
   return {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
     // CORS
     'sec-fetch-dest': 'empty',
     'sec-fetch-mode': 'cors',
