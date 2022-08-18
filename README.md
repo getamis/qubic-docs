@@ -84,7 +84,7 @@ export function requestGraphql({
   creatorUrl,
   isPublic = false,
 }) {
-  const { operationName, query: graphQLQuery } = resolveRequestDocument(graphQLQuery);
+  const { operationName, query: graphQLQuery } = resolveRequestDocument(query);
   const body =
     operationName && query
       ? JSON.stringify({
