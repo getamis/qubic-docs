@@ -33,9 +33,12 @@ export function serviceHeaderBuilder(options) {
   if (!apiKey || !apiSecret) {
     throw Error('apiKey and apiSecret should have value')
   }
+  
+  const urlObj = new URL(url);
+  const resource = `${urlObj.pathname}${urlObj.search}`;
 
   const now = Date.now();
-  const msg = `${now}POST${url}${body}`;
+  const msg = `${now}POST${resource}${body}`;
   const sig = HmacSHA256(msg, apiSecret).toString(Base64);
 
   return {
