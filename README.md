@@ -27,7 +27,7 @@ Qubic Creator 以及 Qubic Pass 的 Admin API 是 server side 使用的 API，�
 import HmacSHA256 from 'crypto-js/hmac-sha256';
 import Base64 from 'crypto-js/enc-base64';
 
-export function serviceHeaderBuilder(options) {
+export function createHeader(options) {
   const { url, apiKey, apiSecret, body = '' } = options;
 
   if (!apiKey || !apiSecret) {
@@ -57,11 +57,57 @@ export function serviceHeaderBuilder(options) {
 
 ### GraphQL Example
 
-GraphQL 可以直接使用簡單的 fetch 來獲得資料，以下是 GraphQL 基金會提供的 API 查詢方式。
+以下建議使用兩種常用的 GraphQL 庫來存取 Qubic GraphQL API。
 
-https://graphql.org/graphql-js/graphql-clients/
+#### GraphQL Request
 
-另外以下是兩種常用的 GraphQL 客戶端，以及使用範例。
+https://github.com/prisma-labs/graphql-request
+
+*Install*
+
+```
+npm install graphql graphql-request
+```
+
+*Example*
+
+```ts
+import request from 'graphql-request';
+
+export function requestGraphql({
+  query,
+  variables,
+  apiKey,
+  apiSecret,
+  creatorUrl,
+  isPublic = false,
+}) {
+  const { operationName, query: graphQLQuery } = resolveRequestDocument(graphQLQuery);
+  const body =
+    operationName && query
+      ? JSON.stringify({
+          query: graphQLQuery,
+          variables,
+          operationName,
+        })
+      : '';
+
+  const headers = createHeader({
+    url: GRAPHQL_URL,
+    apiKey,
+    apiSecret,
+    body,
+  });
+
+  return request({
+    url: GRAPHQL_URL,
+    document: query,
+    variables,
+    requestHeaders: headers,
+  });
+}
+```
+
 
 
 #### Apollo Link
@@ -83,7 +129,7 @@ const getApiAuthLink = (apiKey, apiSecret) =>
           })
         : '';
 
-    const serviceHeaders = geServiceHeaders({
+    const serviceHeaders = createHeader({
       url: GRAPHQL_URL,
       apiKey,
       apiSecret,
@@ -100,60 +146,3 @@ const getApiAuthLink = (apiKey, apiSecret) =>
 ```
 
 
-#### GraphQL Request
-
-https://github.com/prisma-labs/graphql-request
-
-```ts
-import request from 'graphql-request';
-
-function resolveRequestDocument(document) {
-  if (typeof document === 'string') {
-    let operationName;
-
-    try {
-      const parsedDocument = parse(document);
-      operationName = extractOperationName(parsedDocument);
-    } catch (err) {
-      // Failed parsing the document, the operationName will be undefined
-    }
-    return { query: document, operationName };
-  }
-
-  const operationName = extractOperationName(document);
-  return { query: print(document), operationName };
-}
-
-export function requestGraphql({
-  query,
-  variables,
-  apiKey,
-  apiSecret,
-  creatorUrl,
-  isPublic = false,
-}) {
-  const { operationName, query: graphQLQuery } = resolveRequestDocument(graphQLQuery);
-  const body =
-    operationName && query
-      ? JSON.stringify({
-          query: graphQLQuery,
-          variables,
-          operationName,
-        })
-      : '';
-
-  const headers = serviceHeaderBuilder({
-    url: GRAPHQL_URL,
-    apiKey,
-    apiSecret,
-    body,
-  });
-
-  return request({
-    url: GRAPHQL_URL,
-    document: query,
-    variables,
-    requestHeaders: headers,
-  });
-}
-```
