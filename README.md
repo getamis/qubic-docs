@@ -74,7 +74,7 @@ npm install graphql graphql-request
 *Example*
 
 ```ts
-import request from 'graphql-request';
+import request, { resolveRequestDocument } from 'graphql-request';
 
 export function requestGraphql({
   query,
