@@ -56,7 +56,7 @@ const timer = setInterval(() => {
 
 | Key       | Value                      |                Remark |
 | :-------- | :------------------------- | --------------------: |
-| payload   | `String`               |                  本次 |
+| payload   | `String`               |          本次 Request 內容 |
 | signature | `String`            |   上述 payload 的簽名 |
 | target    | `String` | 用以分辨 message 來源 |
 
