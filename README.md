@@ -23,37 +23,33 @@ Qubic Creator 以及 Qubic Pass 的 Admin API 是 server side 使用的 API，�
 
 在使用之前，必須先申請取得 API key 和 secret，使用指定方法簽名後，放入 request 的 headers 中。
 
-```ts
+```typescript
 import HmacSHA256 from 'crypto-js/hmac-sha256';
 import Base64 from 'crypto-js/enc-base64';
 
-export function createHeader(options) {
-  const { url, apiKey, apiSecret, body = '' } = options;
+export const createHeader = (options: { url: string; body: string }) => {
+  const { url, body } = options;
 
-  if (!apiKey || !apiSecret) {
-    throw Error('apiKey and apiSecret should have value')
-  }
-  
   const urlObj = new URL(url);
   const resource = `${urlObj.pathname}${urlObj.search}`;
 
   const now = Date.now();
   const msg = `${now}POST${resource}${body}`;
-  const sig = HmacSHA256(msg, apiSecret).toString(Base64);
+  const sig = HmacSHA256(msg, QUBIC_API_SECRET).toString(Base64);
 
   return {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
+    Accept: 'application/json',
     // CORS
     'sec-fetch-dest': 'empty',
     'sec-fetch-mode': 'cors',
     'sec-fetch-site': 'cross-site',
     // API Key
-    'X-Qubic-Api-Key': apiKey,
+    'X-Qubic-Api-Key': QUBIC_API_KEY,
     'X-Qubic-Ts': now.toString(),
     'X-Qubic-Sign': sig,
   };
-}
+};
 ```
 
 
@@ -73,17 +69,10 @@ npm install graphql graphql-request
 
 *Example*
 
-```ts
+```typescript
 import request, { resolveRequestDocument } from 'graphql-request';
 
-export function requestGraphql({
-  query,
-  variables,
-  apiKey,
-  apiSecret,
-  creatorUrl,
-  isPublic = false,
-}) {
+export const requestQuery = async <T>(query: string, variables?: { [key: string]: any }): Promise<T> => {
   const { operationName, query: graphQLQuery } = resolveRequestDocument(query);
   const body =
     operationName && query
@@ -96,18 +85,16 @@ export function requestGraphql({
 
   const headers = createHeader({
     url: GRAPHQL_URL,
-    apiKey,
-    apiSecret,
     body,
   });
 
-  return request({
+  return request<T>({
     url: GRAPHQL_URL,
     document: query,
     variables,
     requestHeaders: headers,
   });
-}
+};
 ```
 
 
@@ -116,8 +103,8 @@ export function requestGraphql({
 
 https://www.apollographql.com/docs/react/api/link/introduction/
 
-```ts
-const getApiAuthLink = (apiKey, apiSecret) =>
+```typescript
+const getApiAuthLink = () =>
   setContext(async (request, previousContext) => {
     const { operationName, variables, query } = request;
     const { headers = {} } = previousContext;
@@ -133,8 +120,6 @@ const getApiAuthLink = (apiKey, apiSecret) =>
 
     const serviceHeaders = createHeader({
       url: GRAPHQL_URL,
-      apiKey,
-      apiSecret,
       body,
     });
 
