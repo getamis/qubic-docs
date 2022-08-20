@@ -27,7 +27,7 @@ Qubic Creator 以及 Qubic Pass 的 Admin API 是 server side 使用的 API，�
 import HmacSHA256 from 'crypto-js/hmac-sha256';
 import Base64 from 'crypto-js/enc-base64';
 
-export const createHeader = (options: { url: string; body: string }) => {
+const createHeader = (options: { url: string; body: string }) => {
   const { url, body } = options;
 
   const urlObj = new URL(url);
@@ -70,27 +70,27 @@ npm install graphql graphql-request
 *Example*
 
 ```typescript
-import request, { resolveRequestDocument } from 'graphql-request';
+import graphqlRequest, { resolveRequestDocument } from 'graphql-request';
 
-export const requestQuery = async <T>(query: string, variables?: { [key: string]: any }): Promise<T> => {
-  const { operationName, query: graphQLQuery } = resolveRequestDocument(query);
+const request = async <T>(document: string, variables?: { [key: string]: any }): Promise<T> => {
+  const { operationName, query } = resolveRequestDocument(document);
   const body =
     operationName && query
       ? JSON.stringify({
-          query: graphQLQuery,
+          query,
           variables,
           operationName,
         })
       : '';
 
   const headers = createHeader({
-    url: GRAPHQL_URL,
+    url: GRAPHQL_BACKEND_URL,
     body,
   });
 
-  return request<T>({
-    url: GRAPHQL_URL,
-    document: query,
+  return graphqlRequest<T>({
+    url: GRAPHQL_BACKEND_URL,
+    document,
     variables,
     requestHeaders: headers,
   });
