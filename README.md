@@ -7,7 +7,6 @@
   * [Admin API (GraphQL)](./creator/README.md#qubic-creator-admin-api)
 * **Qubic Pass**
   * [Admin API (GraphQL)](./pass/README.md#qubic-pass-admin-api)
-  * [Client-side API (REST)](./pass/README.md#qubic-pass-client-api)
 
 
 ## Usages
