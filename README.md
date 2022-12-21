@@ -51,6 +51,20 @@ const createHeader = (options: { url: string; body: string }) => {
 };
 ```
 
+#### Signature Check
+可以先試著寫單機版程式驗證簽名是否符合下方 `OUTPUT` 再開始串API，以下是給定的測試資料：
+```
+now = 1566549227549
+body = 'the_body'
+method = 'PUT'
+path = '/test/path?currency=USD'
+secret = 'secret'
+
+msg = '1566549227549PUT/test/path?currency=USDthe_body'
+
+OUTPUT:
+xN/7FHzMvIVbJYESYPJlMwNHL9r3DBZ21lsjSn5W3Bo=
+```
 
 ### GraphQL Example
 
