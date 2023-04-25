@@ -39,10 +39,6 @@ const createHeader = (options: { url: string; body: string }) => {
   return {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    // CORS
-    'sec-fetch-dest': 'empty',
-    'sec-fetch-mode': 'cors',
-    'sec-fetch-site': 'cross-site',
     // API Key
     'X-Qubic-Api-Key': QUBIC_API_KEY,
     'X-Qubic-Ts': now.toString(),
