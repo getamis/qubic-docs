@@ -113,6 +113,8 @@ const request = async <T>(document: string, variables?: { [key: string]: any }):
 https://www.apollographql.com/docs/react/api/link/introduction/
 
 ```typescript
+import { print } from 'graphql';
+
 const getApiAuthLink = () =>
   setContext(async (request, previousContext) => {
     const { operationName, variables, query } = request;
