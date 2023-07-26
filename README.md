@@ -1,146 +1,51 @@
 # Qubic Developer Documents
 
+## API & SDK
 
-## APIs
+- **Server-side**
+  - [Creator Admin API (GraphQL)](./creator-admin/README.md)
+  - [Pass Admin API (GraphQL)](./pass-admin/README.md)
+- **Client-side**
+  - [Creator Storefront API (GraphQL)](./creator-storefront/README.md)
+  - Qubic Pass Client-side API：無需權限，只需透過按鈕或 Javascript 程式碼打開彈出視窗，讓使用者連結錢包
+  - [Qubic Connect SDK](https://github.com/getamis/qubic-connect#readme)
 
-* **Qubic Creator**
-  * [Admin API (GraphQL)](./creator/README.md#qubic-creator-admin-api)
-* **Qubic Pass**
-  * [Admin API (GraphQL)](./pass/README.md#qubic-pass-admin-api)
+## Introduction
 
+Creator Admin API、Pass Admin API 以及 Creator Storefront API 要透過 key/secret 取得使用權限，需於通訊時在 header 中加入指定的屬性以完成驗證，描述如下：
 
-## Usages
+| header 屬性     | 類型   | 說明               | 如何取得                                             |
+| --------------- | ------ | ------------------ | ---------------------------------------------------- |
+| x-qubic-api-key | string | API KEY            | [聯絡 Qubic 團隊](https://www.qubic.market/#contact) |
+| x-qubic-ts      | string | 運算當下的時間戳記 | `Date.now().toString()`                              |
+| x-qubic-sign    | string | 運算後的簽名       | [範例](#example)                                     |
 
-Qubic Pass Client-side API 無需權限，只需透過按鈕或 Javascript 程式碼打開彈出視窗，讓使用者連結錢包。
+## Example
 
-Qubic Creator 以及 Qubic Pass 的 Admin API 是 server side 使用的 API，需要透過 API key 與 secret 獲取存取 API 的權限。
+基於 API 類型及安全性的要求，請參考下方文件的範例：
 
-請參考下方文件了解如何產生 headers 以及使用範例。
+- Creator Admin API
+  - [標準](./creator-admin/README.md#usage)
+  - [安全性更高的 API 通訊機制](./creator-admin/README.md#secure-usage)
+- Pass Admin API
+  - [標準](./pass-admin/README.md#usage)
+  - [安全性更高的 API 通訊機制](./pass-admin/README.md#secure-usage)
+- Creator Storefront API
+  - [標準](./creator-storefront/README.md#usage)
+  - [安全性更高的 API 通訊機制](./creator-storefront/README.md#secure-usage)
 
+## Troubleshooting
 
-### Generate API Headers <a id="headers" />
+- 為何我一直收到 `{"error":{"code":404,"message":"resource not found"}}`？
 
-在使用之前，必須先申請取得 API key 和 secret，使用指定方法簽名後，放入 request 的 headers 中。
+  1.  請確認有將 [header 所需的資訊](#introduction)放入其中
+  2.  請確認正在使用的 API key/secret 與 GraphQL endpoint 是匹配的
+  3.  可以先試著寫[單機版程式驗證簽名](./sign/README.md)是否正確
 
-```typescript
-import HmacSHA256 from 'crypto-js/hmac-sha256';
-import Base64 from 'crypto-js/enc-base64';
+## About GraphQL
 
-const createHeader = (options: { url: string; body: string }) => {
-  const { url, body } = options;
+GraphQL 是一種用於查詢和操作 API 的查詢語言，你可以直接使用 fetch(or axios) 向 Qubic GraphQL Server 發送請求
 
-  const urlObj = new URL(url);
-  const resource = `${urlObj.pathname}${urlObj.search}`;
+我們建議使用 [graphql-request](https://github.com/prisma-labs/graphql-request) 這套輕量的函式庫作為開發的工具，我們提供的[範例](#example)也會使用它進行介紹
 
-  const now = Date.now();
-  const msg = `${now}POST${resource}${body}`;
-  const sig = HmacSHA256(msg, QUBIC_API_SECRET).toString(Base64);
-
-  return {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-    // API Key
-    'X-Qubic-Api-Key': QUBIC_API_KEY,
-    'X-Qubic-Ts': now.toString(),
-    'X-Qubic-Sign': sig,
-  };
-};
-```
-
-#### Signature Check
-可以先試著寫單機版程式驗證簽名是否符合下方 `OUTPUT` 再開始串API，以下是給定的測試資料：
-```
-now = 1566549227549
-body = 'the_body'
-method = 'PUT'
-path = '/test/path?currency=USD'
-secret = 'secret'
-
-msg = '1566549227549PUT/test/path?currency=USDthe_body'
-
-OUTPUT:
-xN/7FHzMvIVbJYESYPJlMwNHL9r3DBZ21lsjSn5W3Bo=
-```
-
-### GraphQL Example
-
-以下建議使用兩種常用的 GraphQL 庫來存取 Qubic GraphQL API。
-
-#### GraphQL Request
-
-https://github.com/prisma-labs/graphql-request
-
-*Install*
-
-```
-npm install graphql graphql-request
-```
-
-*Example*
-
-```typescript
-import graphqlRequest, { resolveRequestDocument } from 'graphql-request';
-
-const request = async <T>(document: string, variables?: { [key: string]: any }): Promise<T> => {
-  const { operationName, query } = resolveRequestDocument(document);
-  const body =
-    operationName && query
-      ? JSON.stringify({
-          query,
-          variables,
-          operationName,
-        })
-      : '';
-
-  const headers = createHeader({
-    url: GRAPHQL_BACKEND_URL,
-    body,
-  });
-
-  return graphqlRequest<T>({
-    url: GRAPHQL_BACKEND_URL,
-    document,
-    variables,
-    requestHeaders: headers,
-  });
-};
-```
-
-
-
-#### Apollo Link
-
-https://www.apollographql.com/docs/react/api/link/introduction/
-
-```typescript
-import { print } from 'graphql';
-
-const getApiAuthLink = () =>
-  setContext(async (request, previousContext) => {
-    const { operationName, variables, query } = request;
-    const { headers = {} } = previousContext;
-
-    const body =
-      operationName && query
-        ? JSON.stringify({
-            operationName,
-            variables,
-            query: print(query),
-          })
-        : '';
-
-    const serviceHeaders = createHeader({
-      url: GRAPHQL_URL,
-      body,
-    });
-
-    return {
-      headers: {
-        ...serviceHeaders,
-        ...headers,
-      },
-    };
-  });
-```
-
-
+如果你有 GraphQL 的開發經驗，也可以使用 [Apollo](https://www.apollographql.com/) 進行溝通，我們建議將邏輯以 [Apollo Link](https://www.apollographql.com/docs/react/api/link/introduction/) 的形式封裝
