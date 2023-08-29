@@ -36,7 +36,7 @@ const sig = HmacSHA256(msg, SECRET).toString(Base64);
 const requestHeaders = {
   "x-qubic-api-key": KEY,
   "x-qubic-ts": now.toString(),
-  "X-qubic-sign": sig,
+  "x-qubic-sign": sig,
 };
 
 const document = gql`
@@ -98,7 +98,7 @@ const sig = HmacSHA256(msg, SECRET).toString(Base64);
 const requestHeaders = {
   "x-qubic-api-key": KEY,
   "x-qubic-ts": now.toString(),
-  "X-qubic-sign": sig,
+  "x-qubic-sign": sig,
 };
 
 const result = await request({
