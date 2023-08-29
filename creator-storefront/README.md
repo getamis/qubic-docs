@@ -118,7 +118,7 @@ console.log(result);
 }
 ```
 
-下面以取得訂單列表(orders) 作為範例展示：
+下面以取得訂單列表(orders)作為範例展示：
 
 ```sh
 yarn add graphql-request graphql crypto-js      # yarn
