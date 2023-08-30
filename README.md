@@ -14,11 +14,12 @@
 
 Creator Admin API、Pass Admin API 以及 Creator Storefront API 要透過 key/secret 取得使用權限，需於通訊時在 header 中加入指定的屬性以完成驗證，描述如下：
 
-| header 屬性     | 類型   | 說明               | 如何取得                                             |
-| --------------- | ------ | ------------------ | ---------------------------------------------------- |
-| x-qubic-api-key | string | API KEY            | [聯絡 Qubic 團隊](https://www.qubic.market/#contact) |
-| x-qubic-ts      | string | 運算當下的時間戳記 | `Date.now().toString()`                              |
-| x-qubic-sign    | string | 運算後的簽名       | [範例](#example)                                     |
+| header 屬性     | 類型   | 說明                                                     | 如何取得                                             |
+| --------------- | ------ | -------------------------------------------------------- | ---------------------------------------------------- |
+| x-qubic-api-key | string | API KEY                                                  | [聯絡 Qubic 團隊](https://www.qubic.market/#contact) |
+| x-qubic-ts      | string | 運算當下的時間戳記                                       | `Date.now().toString()`                              |
+| x-qubic-sign    | string | 運算後的簽名                                             | [範例](#example)                                     |
+| Authorization   | string | 選填，使用 Storefront API 存取授權資料時，需要提供此資訊 | [範例](./creator-storefront/README.md#access-token)  |
 
 ## Example
 
